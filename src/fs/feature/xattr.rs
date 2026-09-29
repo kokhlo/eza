@@ -342,21 +342,24 @@ mod extended_attrs {
         }
     }
 
+    // The errno slot that decides which error path is taken is reached
+    // through a different symbol per platform, and netbsd and openbsd expose
+    // neither, so the tests that need a specific error are limited to the
+    // platforms that do.
     #[cfg(test)]
+    #[cfg(not(any(target_os = "netbsd", target_os = "openbsd")))]
     mod tests {
         use super::{ERANGE, MAX_ERANGE_RETRIES, get_loop};
         use std::cell::Cell;
         use std::sync::atomic::{AtomicUsize, Ordering};
 
-        // The errno slot is a thread local that the platform spells
-        // differently, so the tests that need a specific error set it here.
-        #[cfg(any(target_os = "macos", target_os = "ios"))]
+        #[cfg(any(target_os = "macos", target_os = "ios", target_os = "freebsd"))]
         fn set_errno(value: i32) {
             // SAFETY: Assigning to the thread local errno slot.
             unsafe { *libc::__error() = value }
         }
 
-        #[cfg(not(any(target_os = "macos", target_os = "ios")))]
+        #[cfg(not(any(target_os = "macos", target_os = "ios", target_os = "freebsd")))]
         fn set_errno(value: i32) {
             // SAFETY: Assigning to the thread local errno slot.
             unsafe { *libc::__errno_location() = value }
