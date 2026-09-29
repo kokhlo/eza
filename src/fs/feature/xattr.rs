@@ -382,10 +382,8 @@ mod extended_attrs {
 
             // One sizing call and one buffer call per attempt, the last of
             // which is the attempt that gives up.
-            assert_eq!(
-                calls.load(Ordering::SeqCst),
-                (MAX_ERANGE_RETRIES + 1) * 2,
-            );
+            let calls_made = calls.load(Ordering::SeqCst);
+            assert_eq!(calls_made, (MAX_ERANGE_RETRIES + 1) * 2);
             assert_eq!(result.unwrap_err().raw_os_error(), Some(ERANGE));
         }
 
